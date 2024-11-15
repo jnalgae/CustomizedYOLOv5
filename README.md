@@ -453,3 +453,17 @@ For YOLOv5 bugs and feature requests please visit [GitHub Issues](https://github
 
 [assets]: https://github.com/ultralytics/yolov5/releases
 [tta]: https://github.com/ultralytics/yolov5/issues/303
+
+
+## Custom Modifications
+
+The following custom modifications have been made to YOLOv5:
+
+- Modified `detect.py` to detect the presence of **cigarettes** and **mobile phones**.
+- Added functionality to extract bounding box coordinates for **eyes** and **mouth**.
+- Returned detection results indicating the presence of **cigarettes**, **mobile phones**, and facial feature coordinates for **eyes** and **mouth**.
+
+To use the modified version:
+1. Run the detection script as usual.
+2. The script will return additional results for the presence of **cigarettes** and **mobile phones**, along with facial feature coordinates for **eyes** and **mouth**.
+
