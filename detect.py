@@ -1,3 +1,15 @@
+"""
+2024/11/15
+
+Added code to detect the presence of cigarettes.
+Added code to detect the presence of mobile phones.
+Added code to return the top-left and bottom-right coordinates of the left eye.
+Added code to return the top-left and bottom-right coordinates of the right eye.
+Added code to return the top-left and bottom-right coordinates of the mouth.
+
+"""
+
+
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
@@ -76,8 +88,17 @@ def run(
         hide_conf=False,  # hide confidences
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
-        vid_stride=1,  # video frame-rate stride
+        vid_stride=1  # video frame-rate stride
 ):
+    # Added part ####################################################################
+    is_cigar = False
+    is_phone = False
+    leye_coord = []
+    reye_coord = []
+    mouth_coord = []
+    #################################################################################
+
+
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -164,7 +185,25 @@ def run(
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
                         with open(f'{txt_path}.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
+                        
+                    # Added part ####################################################################
+                    if names[int(cls)] == 'Cigar':
+                      is_cigar = True 
+                    
+                    if names[int(cls)] == 'Phone':
+                      is_phone = True
 
+                    if names[int(cls)] == 'Leye':
+                      leye_coord.extend([c.item() for c in xyxy])
+
+                    if names[int(cls)] == 'Reye':
+                      reye_coord.extend([c.item() for c in xyxy])
+
+                    if names[int(cls)] == 'Mouth':
+                      mouth_coord.extend([c.item() for c in xyxy])
+                    #################################################################################
+
+                    
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
@@ -212,7 +251,8 @@ def run(
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
-
+    
+    return is_cigar, is_phone, leye_coord, reye_coord, mouth_coord
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -251,8 +291,11 @@ def parse_opt():
 
 def main(opt):
     check_requirements(exclude=('tensorboard', 'thop'))
-    run(**vars(opt))
 
+    # Added part ####################################################################
+    is_cigar, is_phone, leye_coord, reye_coord, mouth_coord = run(**vars(opt))  
+    return is_cigar, is_phone, leye_coord, reye_coord, mouth_coord
+    #################################################################################
 
 if __name__ == "__main__":
     opt = parse_opt()
