@@ -3,9 +3,9 @@
 
 Added code to detect the presence of cigarettes.
 Added code to detect the presence of mobile phones.
-Added code to return the top-left and bottom-right coordinates of the left eye.
-Added code to return the top-left and bottom-right coordinates of the right eye.
-Added code to return the top-left and bottom-right coordinates of the mouth.
+Added code to return the Bottom-left and top-right coordinates of the left eye.
+Added code to return the Bottom-left and top-right coordinates of the right eye.
+Added code to return the Bottom-left and top-right coordinates of the mouth.
 
 """
 
