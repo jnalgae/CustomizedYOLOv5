@@ -75,6 +75,11 @@ def attempt_load(weights, device=None, inplace=True, fuse=True):
     # Loads an ensemble of models weights=[a,b,c] or a single model weights=[a] or weights=a
     from models.yolo import Detect, Model
 
+    ### Added part #########################################
+    import torch.serialization
+    torch.serialization.add_safe_globals([Detect, Model])
+    ########################################################
+
     model = Ensemble()
     for w in weights if isinstance(weights, list) else [weights]:
         ckpt = torch.load(attempt_download(w), map_location='cpu', weights_only=True)  # load
