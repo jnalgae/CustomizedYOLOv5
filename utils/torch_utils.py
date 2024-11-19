@@ -1,3 +1,9 @@
+"""
+2024/11/19
+
+Disable ALL YOLO output
+"""
+
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 PyTorch utils
@@ -137,7 +143,7 @@ def select_device(device='', batch_size=0, newline=True):
 
     if not newline:
         s = s.rstrip()
-    LOGGER.info(s)
+    # LOGGER.info(s)
     return torch.device(arg)
 
 
