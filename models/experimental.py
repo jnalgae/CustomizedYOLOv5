@@ -78,7 +78,8 @@ def attempt_load(weights, device=None, inplace=True, fuse=True):
     ### Added part #########################################
     import torch.serialization
     from torch.nn.modules.container import Sequential
-    torch.serialization.add_safe_globals([Detect, Model, set, Sequential])
+    from models.common import Conv
+    torch.serialization.add_safe_globals([Detect, Model, set, Sequential, Conv])
     ########################################################
 
     model = Ensemble()
