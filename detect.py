@@ -1,13 +1,13 @@
 """
 2024/11/15
 
-Added code to detect the presence of cigarettes.
-Added code to detect the presence of mobile phones.
-Added code to return the Bottom-left and top-right coordinates of the left eye.
-Added code to return the Bottom-left and top-right coordinates of the right eye.
-Added code to return the Bottom-left and top-right coordinates of the mouth.
-Disable ALL YOLO output
-
+1. Added code to detect the presence of cigarettes.
+2. Added code to detect the presence of mobile phones.
+3. Added code to return the Bottom-left and top-right coordinates of the left eye.
+4. Added code to return the Bottom-left and top-right coordinates of the right eye.
+5. Added code to return the Bottom-left and top-right coordinates of the mouth.
+6. Added code to return the coordinates of the bounding box with the highest confidence for each class
+7. Disable ALL YOLO output
 
 """
 
@@ -68,7 +68,7 @@ def run(
         data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
-        iou_thres=0.45,  # NMS IOU threshold
+        iou_thres=0.25,  # NMS IOU threshold
         max_det=1000,  # maximum detections per image
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
         view_img=False,  # show results
@@ -97,6 +97,14 @@ def run(
     leye_coord = []
     reye_coord = []
     mouth_coord = []
+
+    conf_coord = {
+        "Cigar": (0, torch.zeros(4)), # (confidence, coordinates)
+        "Phone": (0, torch.zeros(4)),
+        "Leye": (0, torch.zeros(4)), 
+        "Reye": (0, torch.zeros(4)),
+        "Mouth": (0, torch.zeros(4))
+    }
     #################################################################################
 
 
@@ -186,23 +194,33 @@ def run(
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
                         with open(f'{txt_path}.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
-                        
-                    # Added part ####################################################################
+                    
+                    # Added part ################################################################
                     if names[int(cls)] == 'Cigar':
-                      is_cigar = True 
+                        is_cigar = True 
                     
                     if names[int(cls)] == 'Phone':
-                      is_phone = True
+                        is_phone = True
 
-                    if names[int(cls)] == 'Leye':
-                      leye_coord.extend([c.item() for c in xyxy])
+                    (max_conf, _) = conf_coord[names[int(cls)]]
+                    
+                    if max_conf < conf:
+                        conf_coord[names[int(cls)]] = (conf, xyxy)
+                    ##############################################################################
+                        
+                # Added part ####################################################################
+                if names[int(cls)] == 'Leye':
+                    _, xyxy = conf_coord['Leye']
+                    leye_coord.extend([c.item() for c in xyxy])
 
-                    if names[int(cls)] == 'Reye':
-                      reye_coord.extend([c.item() for c in xyxy])
+                if names[int(cls)] == 'Reye':
+                    _, xyxy = conf_coord['Reye']
+                    reye_coord.extend([c.item() for c in xyxy])
 
-                    if names[int(cls)] == 'Mouth':
-                      mouth_coord.extend([c.item() for c in xyxy])
-                    #################################################################################
+                if names[int(cls)] == 'Mouth':
+                    _, xyxy = conf_coord['Mouth']
+                    mouth_coord.extend([c.item() for c in xyxy])
+                #################################################################################
 
                     
                     if save_img or save_crop or view_img:  # Add bbox to image
@@ -211,6 +229,7 @@ def run(
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+                        
 
             # Stream results
             im0 = annotator.result()
