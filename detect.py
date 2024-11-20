@@ -205,31 +205,27 @@ def run(
                         (max_conf, _) = conf_coord[names[int(cls)]]
                     
                         if max_conf < conf:
-                            conf_coord[names[int(cls)]] = (conf, xyxy)
+                            conf_coord[names[int(cls)]] = (conf.item(), xyxy)
+                            print(conf_coord[names[int(cls)]])
                     ##############################################################################
-                        
-                # Added part ####################################################################
-                if names[int(cls)] == 'Leye':
-                    _, xyxy = conf_coord['Leye']
-                    leye_coord.extend([c.item() for c in xyxy])
 
-                if names[int(cls)] == 'Reye':
-                    _, xyxy = conf_coord['Reye']
-                    reye_coord.extend([c.item() for c in xyxy])
-
-                if names[int(cls)] == 'Mouth':
-                    _, xyxy = conf_coord['Mouth']
-                    mouth_coord.extend([c.item() for c in xyxy])
-                #################################################################################
-
-                    
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-                        
+                
+                # Added part ####################################################################
+                _, xyxy = conf_coord['Leye']
+                leye_coord.extend([c.item() for c in xyxy])
+
+                _, xyxy = conf_coord['Reye']
+                reye_coord.extend([c.item() for c in xyxy])
+
+                _, xyxy = conf_coord['Mouth']
+                mouth_coord.extend([c.item() for c in xyxy])
+                #################################################################################        
 
             # Stream results
             im0 = annotator.result()
