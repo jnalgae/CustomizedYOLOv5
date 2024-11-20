@@ -99,11 +99,10 @@ def run(
     mouth_coord = []
 
     conf_coord = {
-        "Cigar": (0, torch.zeros(4)), # (confidence, coordinates)
-        "Phone": (0, torch.zeros(4)),
-        "Leye": (0, torch.zeros(4)), 
+        "Leye": (0, torch.zeros(4)), # (confidence, coordinates)
         "Reye": (0, torch.zeros(4)),
-        "Mouth": (0, torch.zeros(4))
+        "Mouth": (0, torch.zeros(4)),
+        "Face": (0, torch.zeros(4))
     }
     #################################################################################
 
@@ -199,13 +198,14 @@ def run(
                     if names[int(cls)] == 'Cigar':
                         is_cigar = True 
                     
-                    if names[int(cls)] == 'Phone':
+                    elif names[int(cls)] == 'Phone':
                         is_phone = True
 
-                    (max_conf, _) = conf_coord[names[int(cls)]]
+                    else: 
+                        (max_conf, _) = conf_coord[names[int(cls)]]
                     
-                    if max_conf < conf:
-                        conf_coord[names[int(cls)]] = (conf, xyxy)
+                        if max_conf < conf:
+                            conf_coord[names[int(cls)]] = (conf, xyxy)
                     ##############################################################################
                         
                 # Added part ####################################################################
