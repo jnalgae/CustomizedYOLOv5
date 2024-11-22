@@ -99,10 +99,12 @@ def run(
     mouth_coord = []
 
     conf_coord = {
-        "Leye": (0, torch.zeros(4)), # (confidence, coordinates)
-        "Reye": (0, torch.zeros(4)),
-        "Mouth": (0, torch.zeros(4)),
-        "Face": (0, torch.zeros(4))
+        "Face": (0, torch.tensor([0, 0, 0, 0])), # (confidence, coordinates)
+        "Leye": (0, torch.tensor([0, 0, 0, 0])),
+        "Reye": (0, torch.tensor([0, 0, 0, 0])),
+        "Mouth": (0, torch.tensor([0, 0, 0, 0])),
+        "Cigar": (0, torch.tensor([0, 0, 0, 0])), 
+        "Phone": (0, torch.tensor([0, 0, 0, 0]))
     }
     #################################################################################
 
@@ -198,24 +200,17 @@ def run(
                     if names[int(cls)] == 'Cigar':
                         is_cigar = True 
                     
-                    elif names[int(cls)] == 'Phone':
+                    if names[int(cls)] == 'Phone':
                         is_phone = True
 
-                    else: 
-                        (max_conf, _) = conf_coord[names[int(cls)]]
+                    (max_conf, _) = conf_coord[names[int(cls)]]
                     
-                        if max_conf < conf:
-                            conf_coord[names[int(cls)]] = (conf.item(), xyxy)
-                            print(conf_coord[names[int(cls)]])
+                    if max_conf < conf:
+                        conf_coord[names[int(cls)]] = (conf.item(), xyxy)
+                        # print(conf_coord[names[int(cls)]])
                     ##############################################################################
 
-                    if save_img or save_crop or view_img:  # Add bbox to image
-                        c = int(cls)  # integer class
-                        label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
-                        annotator.box_label(xyxy, label, color=colors(c, True))
-                    if save_crop:
-                        save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-                
+            
                 # Added part ####################################################################
                 _, xyxy = conf_coord['Leye']
                 leye_coord.extend([c.item() for c in xyxy])
@@ -225,7 +220,19 @@ def run(
 
                 _, xyxy = conf_coord['Mouth']
                 mouth_coord.extend([c.item() for c in xyxy])
-                #################################################################################        
+
+                for i, (_, (conf, xyxy)) in enumerate(conf_coord.items()):
+                    if (not isinstance(xyxy, list)) and torch.all(xyxy == torch.tensor([0, 0, 0, 0])):  # there's no object
+                        continue
+
+                    if save_img or save_crop or view_img:  # Add bbox to image
+                        c = i  # integer class
+                        label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                        annotator.box_label(xyxy, label, color=colors(c, True))
+
+                    if save_crop:
+                        save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+                 #################################################################################        
 
             # Stream results
             im0 = annotator.result()
